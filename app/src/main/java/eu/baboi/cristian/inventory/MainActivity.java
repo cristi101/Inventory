@@ -3,16 +3,16 @@ package eu.baboi.cristian.inventory;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
 import eu.baboi.cristian.inventory.data.InventoryDbHelper;
 
 public class MainActivity extends AppCompatActivity {
-    TextView text;
-    InventoryDbHelper helper;
+    private TextView text;
+    private InventoryDbHelper helper;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,7 +27,8 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             insertData();
-        } catch (SQLException e){};
+        } catch (SQLException e) {
+        }
 
         Cursor cursor=null;
         try{
