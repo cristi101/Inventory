@@ -15,6 +15,7 @@ import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -25,6 +26,7 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -79,6 +81,12 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
         supplierView = findViewById(R.id.supplier);
         phoneView = findViewById(R.id.phone);
 
+        productView.setTag(priceView);
+        priceView.setTag(quantityView);
+        quantityView.setTag(supplierView);
+        supplierView.setTag(phoneView);
+        phoneView.setTag(productView);
+
         setupDirtyFlag();
 
         setupLocales();
@@ -114,7 +122,10 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
         @Override
         public void onFocusChange(View v, boolean hasFocus) {
             EditText field = (EditText) v;
-            if (!hasFocus) toValue(field);
+            if (!hasFocus) {
+                toValue(field);
+                hideKeyboard(v);
+            } else showKeyboard(v);
         }
 
         @Override
@@ -216,7 +227,7 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
 
     private static class QuantityValidation implements View.OnClickListener, View.OnTouchListener, View.OnFocusChangeListener, TextView.OnEditorActionListener {
         private static Locale mLocale;
-        private KeyboardView kv;// what if several instances ?
+        private KeyboardView kv;
 
         QuantityValidation(Locale locale, KeyboardView keyboardView) {
             mLocale = locale;
@@ -359,16 +370,50 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
         phoneView.setTextLocale(locale);
     }
 
-    private void setupKeyboard() {
+    @Override
+    public boolean dispatchKeyShortcutEvent(KeyEvent event) {
+        Log.e("==", "-----------------------");
+        Log.e("dispatch Shortcut KEY", "event:" + event);
+        return super.dispatchKeyShortcutEvent(event);
+    }
 
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        Log.e("==", "=======================");
+        Log.e("DISPATCH KEY", "event:" + event);
+        return super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    public boolean onKeyShortcut(int keyCode, KeyEvent event) {
+        Log.e("==", "-----------------------");
+        Log.e("on shortcut KEY1", "code:" + keyCode);
+        Log.e("on shortcut KEY2", "event:" + event);
+        return super.onKeyShortcut(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        Log.e("Up KEY1", "code:" + keyCode);
+        Log.e("Up KEY2", "event:" + event);
+        Log.e("==", "=======================");
+        return super.onKeyUp(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        Log.e("Down KEY1", "code:" + keyCode);
+        Log.e("Down KEY2", "event:" + event);
+        Log.e("==", "=======================");
+        return super.onKeyDown(keyCode, event);
+    }
+
+    // Source https://inducesmile.com/android/how-to-create-an-android-custom-keyboard-application/
+    private void setupKeyboard() {
 
         keyboardView = findViewById(R.id.keyboard_view);
         Keyboard kb = new Keyboard(this, R.xml.keyboard);
-
-        //Keyboard alphakb = new Keyboard(this, R.xml.qwerty);
-        //Keyboard symbols1kb = new Keyboard(this,R.xml.symbols);
-        //Keyboard symbols2kb = new Keyboard(this,R.xml.symbols_shift);
-
         keyboardView.setKeyboard(kb);
         keyboardView.setOnKeyboardActionListener(new KeyboardView.OnKeyboardActionListener() {
             @Override
@@ -381,24 +426,35 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
 
             }
 
+            //TODO add next button
+
             @Override
             public void onKey(int primaryCode, int[] keyCodes) {
-                long eventTime = System.currentTimeMillis();
-                int flags = KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE;
+                View v = getCurrentFocus();
+                View next;
+                int flagsDown = KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE;
+                int flagsUp = KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE;
                 int scancode = 0;
-                if (primaryCode == KeyEvent.KEYCODE_ENTER) {// ENTER pressed
-                    flags = KeyEvent.FLAG_FROM_SYSTEM;
-                } else if (primaryCode == -1) {// Next pressed
-                    primaryCode = KeyEvent.KEYCODE_ENTER;
-                    flags |= 0x8;
-                    scancode = 0;
+                switch (primaryCode) {
+                    case -1:
+                        next = v.focusSearch(View.FOCUS_DOWN);
+                        next.requestFocusFromTouch();
+                        break;
+                    case -2:
+                        next = v.focusSearch(View.FOCUS_UP);
+                        next.requestFocusFromTouch();
+                        break;
+                    case KeyEvent.KEYCODE_ENTER:
+                        break;
+                    default:// dispatch the key event
+                        long eventTime = SystemClock.uptimeMillis();
+                        KeyEvent eventDown = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, primaryCode, 0, 0, 0, scancode, flagsDown, InputDevice.SOURCE_KEYBOARD);
+                        KeyEvent eventUp = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_UP, primaryCode, 0, 0, 0, scancode, flagsUp, InputDevice.SOURCE_KEYBOARD);
+                        //eventDown.dispatch(v);
+                        //eventUp.dispatch(v);
+                        dispatchKeyEvent(eventDown);
+                        dispatchKeyEvent(eventUp);
                 }
-                Log.e("KEY1", "code:" + primaryCode);
-                Log.e("KEY2", "flag:" + flags);
-                KeyEvent eventDown = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, primaryCode, 0, 0, 0, scancode, flags);
-                KeyEvent eventUp = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_UP, primaryCode, 0, 0, 0, scancode, flags);
-                dispatchKeyEvent(eventDown);
-                dispatchKeyEvent(eventUp);
             }
 
             @Override
@@ -428,15 +484,6 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
         });
 
         hideCustomKeyboard(keyboardView);
-
-
-        priceView.setOnKeyListener(new View.OnKeyListener() {
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                //Log.e("Keyboard","Code:"+keyCode);
-                Log.e("PriceView key", "Event:" + event);
-                return false;
-            }
-        });
 
         //TODO move filter somewhere else
         InputFilter[] filters = new InputFilter[]{new Filter()};
@@ -515,6 +562,8 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
     }
 
     private void addSetup() {
+        // move to first field
+        productView.requestFocusFromTouch();
         setTitle(R.string.add_title);
         enableFields(true);// enable the edit fields
         enableButtons(false);// disable the buy/sell buttons
@@ -524,6 +573,10 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
     }
 
     private void viewSetup() {
+        //hide the keyboards in view mode
+        hideKeyboard(productView);
+        hideCustomKeyboard(keyboardView);
+
         setTitle(R.string.view_title);
         enableFields(false);// disable the edit fields
         enableButtons(true);// enable the buy/sell buttons
@@ -533,6 +586,8 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
     }
 
     private void editSetup() {
+        // move to first field
+        productView.requestFocusFromTouch();
         setTitle(R.string.edit_title);
         enableFields(true);// enable the edit fields
         enableButtons(false);// disable the buy/sell buttons

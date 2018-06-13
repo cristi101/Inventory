@@ -115,7 +115,7 @@
                     android:digits="0123456789,."
                     android:inputType="text"
                     android:singleLine="true"
-                    android:maxLength="16" />
+                    android:maxLength="160" />
 
                 <ImageView
                     android:id="@+id/sell"

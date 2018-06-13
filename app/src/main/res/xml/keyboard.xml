@@ -33,10 +33,9 @@
             android:codes="13"
             android:keyLabel="6" />
         <Key
-            android:codes="66"
+            android:codes="-1"
             android:keyEdgeFlags="right"
-            android:keyIcon="@drawable/enter"
-            android:iconPreview="@drawable/enter" />
+            android:keyLabel="Next" />
     </Row>
     <Row>
         <Key
@@ -50,9 +49,9 @@
             android:codes="16"
             android:keyLabel="9" />
         <Key
-            android:codes="-1"
+            android:codes="-2"
             android:keyEdgeFlags="right"
-            android:keyLabel="Next" />
+            android:keyLabel="Prev." />
     </Row>
     <Row android:rowEdgeFlags="bottom">
         <Key
@@ -64,7 +63,11 @@
             android:keyLabel="0" />
         <Key
             android:codes="56"
-            android:keyEdgeFlags="right"
             android:keyLabel="." />
+        <Key
+            android:codes="66"
+            android:keyEdgeFlags="right"
+            android:keyIcon="@drawable/enter"
+            android:iconPreview="@drawable/enter" />
     </Row>
 </Keyboard>
