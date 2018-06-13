@@ -1,76 +1,101 @@
 package eu.baboi.cristian.inventory;
 
+import android.app.LoaderManager;
+import android.content.ContentUris;
+import android.content.CursorLoader;
+import android.content.Intent;
+import android.content.Loader;
 import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.widget.TextView;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.CursorAdapter;
+import android.widget.ListView;
 
-import eu.baboi.cristian.inventory.data.InventoryDbHelper;
+import eu.baboi.cristian.inventory.data.InventoryContract.InventoryEntry;
 
-public class MainActivity extends AppCompatActivity {
-    private TextView text;
-    private InventoryDbHelper helper;
+
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, LoaderManager.LoaderCallbacks<Cursor> {
+    private CursorAdapter mAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        text = findViewById(R.id.text);
-        helper = new InventoryDbHelper(this);
+        setContentView(R.layout.main_activity);
+
+        // there is no data at first
+        mAdapter = new InventoryCursorAdapter(this, null);
+
+        // list view setup
+        ListView list = findViewById(R.id.list);
+        list.setEmptyView(findViewById(R.id.empty));
+        list.setAdapter(mAdapter);
+        list.setOnItemClickListener(this);
+
+        // start loader
+        getLoaderManager().initLoader(0, null, this);
+    }
+
+    // user event handling
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-
-        try {
-            insertData();
-        } catch (SQLException e) {
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.add:
+                add();
+                return true;
         }
-
-        Cursor cursor=null;
-        try{
-            cursor = queryData();
-            StringBuilder data = new StringBuilder();
-            while (cursor.moveToNext()){
-                String product = cursor.getString(0);
-                String price = cursor.getString(1);
-                String quantity = cursor.getString(2);
-                String supplier = cursor.getString(3);
-                String phone = cursor.getString(4);
-
-                data.append("\n product:");data.append(product);
-                data.append("\n   price:");data.append(price);
-                data.append("\nquantity:");data.append(quantity);
-                data.append("\nsupplier:");data.append(supplier);
-                data.append("\n   phone:");data.append(phone);
-                data.append("\n------------------------------");
-
-                Log.e("DATA  product",product);
-                Log.e("DATA    price",price);
-                Log.e("DATA quantity",quantity);
-                Log.e("DATA supplier",supplier);
-                Log.e("DATA    phone",phone);
-                Log.e("DATA","------------------------------");
-            }
-            text.setText(data.toString());
-        } finally {
-            if(cursor!=null)
-            cursor.close();
-        }
+        return super.onOptionsItemSelected(item);
     }
 
-    private void insertData(){
-        SQLiteDatabase db = helper.getWritableDatabase();
-        db.execSQL("delete from inventory");
-        db.execSQL("insert into inventory(product,price,quantity,supplier,phone) values ('bicycle',99.99,18,'Golden Bicycles','123456789')");
-        db.execSQL("insert into inventory(product,price,quantity,supplier,phone) values ('ball',49.99, 100,'Balls for everyone','987654321')");
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        view(id);
     }
 
-    private Cursor queryData(){
-        SQLiteDatabase db = helper.getReadableDatabase();
-        return db.rawQuery("select product, price, quantity, supplier, phone from inventory",null);
+    // Cursor binding to the list
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        if (id != 0) return null;
+        String[] projection = {
+                InventoryEntry._ID,
+                InventoryEntry.COLUMN_INVENTORY_PRODUCT,
+                InventoryEntry.COLUMN_INVENTORY_PRICE,
+                InventoryEntry.COLUMN_INVENTORY_QUANTITY
+        };
+        return new CursorLoader(this, InventoryEntry.CONTENT_URI, projection, null, null, null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mAdapter.swapCursor(null);
+    }
+
+    // user actions
+    private void add() {
+        Intent intent = new Intent(this, ViewActivity.class);
+        startActivity(intent);
+    }
+
+    private void view(long id) {
+        Intent intent = new Intent(this, ViewActivity.class);
+        intent.setAction(Intent.ACTION_EDIT);
+        intent.setData(ContentUris.withAppendedId(InventoryEntry.CONTENT_URI, id));
+        startActivity(intent);
     }
 }

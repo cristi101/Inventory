@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:id="@+id/empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="@dimen/store_size"
+            android:layout_height="@dimen/store_size"
+            android:layout_gravity="center_horizontal"
+            android:contentDescription="@string/empty_view_description"
+            android:src="@mipmap/ic_empty" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="@string/empty_inventory"
+            android:textAppearance="?android:textAppearanceMedium" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/header"
+        android:orientation="horizontal">
+
+        <TextView
+            style="@style/product"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/name" />
+
+        <TextView
+            style="@style/data"
+            android:layout_width="@dimen/price_width"
+            android:layout_height="wrap_content"
+            android:text="@string/price" />
+
+        <TextView
+            style="@style/data"
+            android:layout_width="@dimen/quantity_width"
+            android:layout_height="wrap_content"
+            android:text="@string/stock" />
+
+        <ImageView
+            style="@style/sale"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:src="@drawable/cart"
+            android:contentDescription="@string/cart_description" />
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/header"
+        android:drawSelectorOnTop="true" />
+</RelativeLayout>

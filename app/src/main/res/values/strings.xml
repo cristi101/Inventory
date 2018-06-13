@@ -1,3 +1,84 @@
 <resources>
     <string name="app_name">Inventory</string>
+
+    <string name="cart_button_description">Shopping cart button</string>
+    <string name="cart_description">Shopping cart picture</string>
+    <string name="empty_view_description">Picture of a store</string>
+    <string name="empty_inventory">There is nothing for sale!\nPress + to add some inventory.</string>
+
+    <!-- error messages -->
+    <string name="buy_item_error">Cannot buy this!\n%s</string>
+    <string name="sell_item_error">Cannot sell this!\n%s</string>
+    <string name="database_error">Database error!</string>
+    <string name="validation_error">Data validation error!\n%s</string>
+
+    <string name="delete_failed">Delete failed!</string>
+    <string name="delete_success">Delete successful</string>
+    <string name="insert_failed">Insert failed!</string>
+    <string name="insert_success">Insert successful</string>
+    <string name="update_failed">Update failed!</string>
+    <string name="update_success">Update successful</string>
+
+    <!-- set with setError  -->
+    <string name="invalid_data">Please enter valid data!</string>
+    <string name="not_empty">Can\'t be empty!</string>
+    <string name="is_number">Must be a number!</string>
+    <string name="is_positive">Must be positive!</string>
+
+
+    <!-- field labels and hints -->
+    <string name="name">Name</string>
+    <string name="hint_name">not empty</string>
+    <string name="price">Price</string>
+    <string name="hint_price">pozitive</string>
+    <string name="stock">Stock</string>
+    <string name="quantity">Quantity</string>
+    <string name="hint_quantity">pozitive</string>
+    <string name="supplier">Supplier</string>
+    <string name="hint_supplier">not empty</string>
+    <string name="phone">Phone</string>
+    <string name="hint_phone">not empty</string>
+
+    <string name="call_supplier">Call supplier</string>
+    <string name="sell_item">Sell item!</string>
+    <string name="buy_item">Buy item</string>
+
+    <!-- detail form titles -->
+    <string name="add_title">Add</string>
+    <string name="view_title">View</string>
+    <string name="edit_title">Edit</string>
+
+    <!-- menu labels -->
+    <string name="add">Add</string>
+    <string name="save">Save</string>
+    <string name="edit">Edit</string>
+    <!--string name="delete">Delete</string-->
+
+
+    <!-- Confirmation dialog box labels  -->
+
+    <!-- Save changes dialog  -->
+
+    <!-- Dialog message when user is leaving editor but hasn't saved changes [CHAR LIMIT=NONE] -->
+    <string name="unsaved_changes_dialog_msg">Discard your changes and quit editing?</string>
+
+    <!-- Dialog button text for the option to discard a user's changes [CHAR LIMIT=20] -->
+    <string name="discard">Discard</string>
+
+    <!-- Dialog button text for the option to keep editing the current pet [CHAR LIMIT=20] -->
+    <string name="keep_editing">Keep Editing</string>
+
+
+    <!-- Delete dialog  -->
+
+    <!-- Dialog message to ask the user to confirm deleting the current pet [CHAR LIMIT=NONE] -->
+    <string name="delete_dialog_msg">Delete this item?</string>
+
+    <!-- Dialog button text for the option to confirm deleting the current pet [CHAR LIMIT=20] -->
+    <string name="delete">Delete</string>
+
+    <!-- Dialog button text for the option to cancel deletion of the current pet [CHAR LIMIT=20] -->
+    <string name="cancel">Cancel</string>
+
+
 </resources>

@@ -1,0 +1,15 @@
+<resources>
+    <dimen name="margin_horizontal">8dp</dimen>
+    <dimen name="margin_vertical">8dp</dimen>
+    <dimen name="field_gap">8dp</dimen>
+    <dimen name="label_gap">8dp</dimen>
+
+    <dimen name="store_size">128dp</dimen>
+    <dimen name="button_size">24dp</dimen>
+
+    <dimen name="price_width">80dp</dimen>
+    <dimen name="quantity_width">50dp</dimen>
+
+    <dimen name="key_height">50dip</dimen>
+
+</resources>

@@ -8,4 +8,69 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <!-- Common attributes for list item fields -->
+    <style name="list_item" parent="AppTheme">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:layout_gravity">center_vertical</item>
+        <item name="android:layout_marginTop">@dimen/margin_vertical</item>
+        <item name="android:layout_marginBottom">@dimen/margin_vertical</item>
+        <item name="android:fontFamily">serif</item>
+    </style>
+
+    <!-- product field attributes -->
+    <style name="product" parent="list_item">
+        <item name="android:layout_marginLeft">@dimen/margin_horizontal</item>
+        <item name="android:layout_marginRight">@dimen/field_gap</item>
+        <item name="android:textAppearance">?android:textAppearanceMedium</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- sale button attributes -->
+    <style name="sale" parent="list_item">
+        <item name="android:layout_marginRight">@dimen/margin_horizontal</item>
+    </style>
+
+    <!-- quantity & price fields attributes -->
+    <style name="data" parent="list_item">
+        <item name="android:layout_marginRight">@dimen/field_gap</item>
+        <item name="android:textAppearance">?android:textAppearanceSmall</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:gravity">right</item>
+    </style>
+
+
+    <!-- attributes for the detail form  -->
+
+    <style name="form" parent="AppTheme">
+        <item name="android:textAppearance">?android:textAppearanceLarge</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:fontFamily">serif</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_columnSpan">1</item>
+        <item name="android:layout_rowSpan">1</item>
+        <item name="android:paddingLeft">0dp</item>
+        <item name="android:paddingRight">0dp</item>
+    </style>
+
+    <style name="label" parent="form">
+        <item name="android:textStyle">bold</item>
+        <item name="android:gravity">right</item>
+        <item name="android:layout_gravity">center_vertical|right</item>
+    </style>
+
+    <style name="field" parent="form">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:gravity">center_vertical|left</item>
+        <item name="android:layout_gravity">center_vertical|left</item>
+        <item name="android:textColorHint">@color/hint</item>
+        <item name="android:selectAllOnFocus">true</item>
+    </style>
+
+    <style name="button">
+        <item name="android:layout_gravity">center</item>
+        <item name="android:gravity">center</item>
+    </style>
+
 </resources>

@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/keyboard_view">
+
+        <GridLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="@dimen/margin_horizontal"
+            android:layout_marginRight="@dimen/margin_horizontal"
+            android:layout_marginTop="@dimen/margin_vertical"
+            android:columnCount="3"
+            android:rowCount="5"
+            tools:context=".ViewActivity">
+
+
+            <!-- middle vertical line -->
+            <View
+                android:layout_width="3dp"
+                android:layout_height="0dp"
+                android:layout_column="1"
+                android:layout_columnSpan="1"
+                android:layout_gravity="fill_vertical"
+                android:layout_marginLeft="@dimen/label_gap"
+                android:layout_marginRight="@dimen/label_gap"
+                android:layout_row="0"
+                android:layout_rowSpan="5"
+                android:background="@color/header" />
+
+            <!--TODO Check the input type for fields -->
+            <!--TODO Add citations -->
+
+            <!-- labels and fields -->
+            <TextView
+                style="@style/label"
+                android:layout_column="0"
+                android:layout_row="0"
+                android:labelFor="@id/product"
+                android:text="@string/name" />
+
+            <EditText
+                android:id="@+id/product"
+                style="@style/field"
+                android:nextFocusDown="@id/price"
+                android:nextFocusForward="@id/price"
+                android:nextFocusUp="@id/phone"
+                android:layout_column="2"
+                android:layout_row="0"
+                android:hint="@string/hint_name"
+                android:inputType="text"
+                android:maxLength="200"
+                android:maxLines="1"
+                android:minLines="1"
+                android:scrollHorizontally="true"
+                android:scrollbars="horizontal|vertical"
+                android:singleLine="true" />
+
+            <TextView
+                style="@style/label"
+                android:layout_column="0"
+                android:layout_row="1"
+                android:labelFor="@id/price"
+                android:text="@string/price" />
+
+            <EditText
+                android:id="@+id/price"
+                style="@style/field"
+                android:nextFocusDown="@id/quantity"
+                android:nextFocusForward="@id/quantity"
+                android:nextFocusUp="@id/product"
+                android:layout_column="2"
+                android:layout_row="1"
+                android:hint="@string/hint_price"
+                android:digits="0123456789,."
+                android:inputType="text"
+                android:singleLine="true"
+                android:maxLength="16" />
+
+            <TextView
+                style="@style/label"
+                android:layout_column="0"
+                android:layout_row="2"
+                android:labelFor="@id/quantity"
+                android:text="@string/quantity" />
+
+            <LinearLayout
+                style="@style/field"
+                android:layout_column="2"
+                android:layout_row="2"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/buy"
+                    style="@style/button"
+                    android:layout_width="@dimen/button_size"
+                    android:layout_height="@dimen/button_size"
+                    android:background="@drawable/plus"
+                    android:contentDescription="@string/buy_item" />
+
+                <EditText
+                    android:id="@+id/quantity"
+                    style="@style/field"
+                    android:nextFocusDown="@id/supplier"
+                    android:nextFocusForward="@id/supplier"
+                    android:nextFocusUp="@id/price"
+                    android:hint="@string/hint_quantity"
+                    android:digits="0123456789,."
+                    android:inputType="text"
+                    android:singleLine="true"
+                    android:maxLength="16" />
+
+                <ImageView
+                    android:id="@+id/sell"
+                    style="@style/button"
+                    android:layout_width="@dimen/button_size"
+                    android:layout_height="@dimen/button_size"
+                    android:background="@drawable/minus"
+                    android:contentDescription="@string/sell_item" />
+            </LinearLayout>
+
+            <TextView
+                style="@style/label"
+                android:layout_column="0"
+                android:layout_row="3"
+                android:labelFor="@id/supplier"
+                android:text="@string/supplier" />
+
+            <EditText
+                android:id="@+id/supplier"
+                style="@style/field"
+                android:nextFocusDown="@id/phone"
+                android:nextFocusForward="@id/phone"
+                android:nextFocusUp="@id/quantity"
+                android:layout_column="2"
+                android:layout_row="3"
+                android:hint="@string/hint_supplier"
+                android:inputType="text"
+                android:maxLength="200"
+                android:maxLines="1"
+                android:minLines="1"
+                android:scrollHorizontally="true"
+                android:scrollbars="horizontal|vertical"
+                android:singleLine="true" />
+
+            <TextView
+                style="@style/label"
+                android:layout_column="0"
+                android:layout_row="4"
+                android:labelFor="@id/phone"
+                android:text="@string/phone" />
+
+            <LinearLayout
+                style="@style/field"
+                android:layout_column="2"
+                android:layout_row="4"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/phone"
+                    style="@style/field"
+                    android:nextFocusDown="@id/product"
+                    android:nextFocusForward="@id/product"
+                    android:nextFocusUp="@id/supplier"
+                    android:hint="@string/hint_phone"
+                    android:inputType="phone" />
+
+                <ImageView
+                    android:id="@+id/call"
+                    style="@style/button"
+                    android:layout_width="@dimen/button_size"
+                    android:layout_height="@dimen/button_size"
+                    android:contentDescription="@string/call_supplier"
+                    android:src="@drawable/call" />
+
+            </LinearLayout>
+        </GridLayout>
+    </ScrollView>
+
+
+    <android.inputmethodservice.KeyboardView
+        android:id="@+id/keyboard_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:background="@color/keyboard"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:keyBackground="@drawable/key"
+        android:keyPreviewHeight="30dp"
+        android:keyTextColor="@color/white"
+        android:keyPreviewLayout="@layout/preview"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:paddingRight="4dp"
+        android:visibility="gone" />
+</RelativeLayout>
