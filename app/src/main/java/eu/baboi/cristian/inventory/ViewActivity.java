@@ -20,12 +20,9 @@ import android.support.v4.app.NavUtils;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
-import android.text.InputFilter;
 import android.text.InputType;
-import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -81,12 +78,6 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
         supplierView = findViewById(R.id.supplier);
         phoneView = findViewById(R.id.phone);
 
-        productView.setTag(priceView);
-        priceView.setTag(quantityView);
-        quantityView.setTag(supplierView);
-        supplierView.setTag(phoneView);
-        phoneView.setTag(productView);
-
         setupDirtyFlag();
 
         setupLocales();
@@ -94,6 +85,9 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
         setupFieldValidation();
 
         setupButtons();
+
+        hideCustomKeyboard(keyboardView);
+        hideKeyboard(productView);
 
         // init form
         if (savedInstanceState == null) {// initial state
@@ -108,11 +102,16 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
             restoreMode();
             dataChanged = savedInstanceState.getBoolean(CHANGED);
         }
-
-        hideCustomKeyboard(keyboardView);
-        hideKeyboard(productView);
     }
 
+    // save local state on rotation
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(URI, mUri);
+        outState.putBoolean(MODE, editMode);
+        outState.putBoolean(CHANGED, dataChanged);
+    }
 
     // Field validation classes
 
@@ -302,17 +301,14 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
         }
     }
 
+
+    // setup methods
+
+
     private void setupFieldValidation() {
         TextValidation textValidation = new TextValidation();
         PriceValidation priceValidation = new PriceValidation(locale, keyboardView);
         QuantityValidation quantityValidation = new QuantityValidation(locale, keyboardView);
-
-        // clear error message
-        productView.setError(null);
-        priceView.setError(null);
-        quantityView.setError(null);
-        supplierView.setError(null);
-        phoneView.setError(null);
 
         productView.setOnFocusChangeListener(textValidation);
         productView.setOnEditorActionListener(textValidation);
@@ -350,18 +346,12 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
         phoneView.addTextChangedListener(this);
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putParcelable(URI, mUri);
-        outState.putBoolean(MODE, editMode);
-        outState.putBoolean(CHANGED, dataChanged);
-    }
+
 
     // state setup
 
     private void setupLocales() {
-        locale = Locale.GERMANY;
+        locale = Locale.getDefault();
 
         productView.setTextLocale(locale);
         priceView.setTextLocale(locale);
@@ -370,125 +360,82 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
         phoneView.setTextLocale(locale);
     }
 
-    @Override
-    public boolean dispatchKeyShortcutEvent(KeyEvent event) {
-        Log.e("==", "-----------------------");
-        Log.e("dispatch Shortcut KEY", "event:" + event);
-        return super.dispatchKeyShortcutEvent(event);
-    }
-
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
-        Log.e("==", "=======================");
-        Log.e("DISPATCH KEY", "event:" + event);
-        return super.dispatchKeyEvent(event);
-    }
-
-    @Override
-    public boolean onKeyShortcut(int keyCode, KeyEvent event) {
-        Log.e("==", "-----------------------");
-        Log.e("on shortcut KEY1", "code:" + keyCode);
-        Log.e("on shortcut KEY2", "event:" + event);
-        return super.onKeyShortcut(keyCode, event);
-    }
-
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        Log.e("Up KEY1", "code:" + keyCode);
-        Log.e("Up KEY2", "event:" + event);
-        Log.e("==", "=======================");
-        return super.onKeyUp(keyCode, event);
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-
-        Log.e("Down KEY1", "code:" + keyCode);
-        Log.e("Down KEY2", "event:" + event);
-        Log.e("==", "=======================");
-        return super.onKeyDown(keyCode, event);
-    }
+    // Custom numeric keyboard routines
 
     // Source https://inducesmile.com/android/how-to-create-an-android-custom-keyboard-application/
+
+    private class CustomKeyboard implements KeyboardView.OnKeyboardActionListener {
+
+
+        @Override
+        public void onKey(int primaryCode, int[] keyCodes) {
+            View v = getCurrentFocus();
+            View next;
+            int flagsDown = KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE;
+            int flagsUp = KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE;
+            int scancode = 0;
+            switch (primaryCode) {
+                case -1:
+                    next = v.focusSearch(View.FOCUS_DOWN);
+                    next.requestFocusFromTouch();
+                    break;
+                case -2:
+                    next = v.focusSearch(View.FOCUS_UP);
+                    next.requestFocusFromTouch();
+                    break;
+                case KeyEvent.KEYCODE_ENTER:
+                default:// dispatch the key event
+                    long eventTime = SystemClock.uptimeMillis();
+                    KeyEvent eventDown = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, primaryCode, 0, 0, 0, scancode, flagsDown, InputDevice.SOURCE_KEYBOARD);
+                    KeyEvent eventUp = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_UP, primaryCode, 0, 0, 0, scancode, flagsUp, InputDevice.SOURCE_KEYBOARD);
+
+                    dispatchKeyEvent(eventDown);
+                    dispatchKeyEvent(eventUp);
+            }
+        }
+
+        @Override
+        public void onPress(int primaryCode) {
+
+        }
+
+        @Override
+        public void onRelease(int primaryCode) {
+
+        }
+
+        @Override
+        public void onText(CharSequence text) {
+
+        }
+
+        @Override
+        public void swipeLeft() {
+            hideCustomKeyboard(keyboardView);
+        }
+
+        @Override
+        public void swipeRight() {
+            hideCustomKeyboard(keyboardView);
+        }
+
+        @Override
+        public void swipeDown() {
+            hideCustomKeyboard(keyboardView);
+        }
+
+        @Override
+        public void swipeUp() {
+            hideCustomKeyboard(keyboardView);
+        }
+    }
+
     private void setupKeyboard() {
 
         keyboardView = findViewById(R.id.keyboard_view);
         Keyboard kb = new Keyboard(this, R.xml.keyboard);
         keyboardView.setKeyboard(kb);
-        keyboardView.setOnKeyboardActionListener(new KeyboardView.OnKeyboardActionListener() {
-            @Override
-            public void onPress(int primaryCode) {
-
-            }
-
-            @Override
-            public void onRelease(int primaryCode) {
-
-            }
-
-            //TODO add next button
-
-            @Override
-            public void onKey(int primaryCode, int[] keyCodes) {
-                View v = getCurrentFocus();
-                View next;
-                int flagsDown = KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE;
-                int flagsUp = KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE;
-                int scancode = 0;
-                switch (primaryCode) {
-                    case -1:
-                        next = v.focusSearch(View.FOCUS_DOWN);
-                        next.requestFocusFromTouch();
-                        break;
-                    case -2:
-                        next = v.focusSearch(View.FOCUS_UP);
-                        next.requestFocusFromTouch();
-                        break;
-                    case KeyEvent.KEYCODE_ENTER:
-                        break;
-                    default:// dispatch the key event
-                        long eventTime = SystemClock.uptimeMillis();
-                        KeyEvent eventDown = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, primaryCode, 0, 0, 0, scancode, flagsDown, InputDevice.SOURCE_KEYBOARD);
-                        KeyEvent eventUp = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_UP, primaryCode, 0, 0, 0, scancode, flagsUp, InputDevice.SOURCE_KEYBOARD);
-                        //eventDown.dispatch(v);
-                        //eventUp.dispatch(v);
-                        dispatchKeyEvent(eventDown);
-                        dispatchKeyEvent(eventUp);
-                }
-            }
-
-            @Override
-            public void onText(CharSequence text) {
-
-            }
-
-            @Override
-            public void swipeLeft() {
-
-            }
-
-            @Override
-            public void swipeRight() {
-
-            }
-
-            @Override
-            public void swipeDown() {
-
-            }
-
-            @Override
-            public void swipeUp() {
-
-            }
-        });
-
-        hideCustomKeyboard(keyboardView);
-
-        //TODO move filter somewhere else
-        InputFilter[] filters = new InputFilter[]{new Filter()};
-        //priceView.setFilters(filters);
-        //quantityView.setFilters(filters);
+        keyboardView.setOnKeyboardActionListener(new CustomKeyboard());
 
     }
 
@@ -534,7 +481,6 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
                 editSetup();
             } else {
                 viewSetup();
-
             }
         }
     }
@@ -561,7 +507,20 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
         sellView.setVisibility(enabled ? View.VISIBLE : View.GONE);
     }
 
+
+    // clear error messages
+    private void clearErrors() {
+        productView.setError(null, null);
+        priceView.setError(null, null);
+        quantityView.setError(null, null);
+        supplierView.setError(null, null);
+        phoneView.setError(null, null);
+    }
+
+    // state initialization routines
+
     private void addSetup() {
+        clearErrors();
         // move to first field
         productView.requestFocusFromTouch();
         setTitle(R.string.add_title);
@@ -572,7 +531,16 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
         invalidateOptionsMenu(); // refresh the menu
     }
 
+    private void clearSelection() {
+        View v = getCurrentFocus();
+        if (v instanceof EditText) {
+            ((EditText) v).setSelection(0, 0);
+        }
+    }
     private void viewSetup() {
+        clearSelection();
+        clearErrors();
+
         //hide the keyboards in view mode
         hideKeyboard(productView);
         hideCustomKeyboard(keyboardView);
@@ -586,6 +554,8 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
     }
 
     private void editSetup() {
+        clearErrors();
+
         // move to first field
         productView.requestFocusFromTouch();
         setTitle(R.string.edit_title);
@@ -596,29 +566,8 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
         invalidateOptionsMenu();//refresh the menu
     }
 
-    //TODO fa filtru pt. cifra/,/./lungime si eventual model
-    private class Filter implements InputFilter {
-        String pattern = "###,###,###,###.##";
 
-        @Override
-        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
-            if (start == end) return null;
-
-            StringBuilder result = new StringBuilder();
-            for (int i = start; i < end; i++) {
-                char ch = source.charAt(i);
-                //if(ch=='.') continue;
-                //if(ch==',' ) continue;
-                if (!Character.isDigit(ch) && ch != '.' && ch != ',') continue;
-                result.append(ch);
-            }
-            // here result has only digits
-            return result;
-        }
-    }
-
-    //TODO eventual aici se pune modelul
-    //watch for changes
+    // Watch for changes in the form fields
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -634,7 +583,8 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
         if (editMode || mUri == null) dataChanged = true;// mark form as dirty
     }
 
-    // button handling
+
+    // Button handling
     private class Listener implements View.OnClickListener {
         private int which;
 
@@ -658,7 +608,7 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
         }
     }
 
-    // menu handling
+    // Menu handling
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -740,10 +690,13 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
                 // Show a dialog that notifies the user they have unsaved changes
                 showConfirmationDialog(R.string.unsaved_changes_dialog_msg, R.string.discard, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
+                    public void onClick(DialogInterface dialog, int i) {
+                        if (dialog != null)
+                            dialog.dismiss();
+
                         if (editMode) {
-                            viewSetup();// go into view mode
                             getContentResolver().notifyChange(mUri, null);// discard changes
+                            viewSetup();// go into view mode
                         } else NavUtils.navigateUpFromSameTask(ViewActivity.this);
                     }
                 }, R.string.keep_editing);
@@ -759,6 +712,7 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
 
     @Override
     public void onBackPressed() {// must use finish
+
         if (isCustomKeyboardVisible()) {
             hideCustomKeyboard(keyboardView);
             return;
@@ -773,16 +727,18 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
         // Show dialog that there are unsaved changes
         showConfirmationDialog(R.string.unsaved_changes_dialog_msg, R.string.discard, new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
+            public void onClick(DialogInterface dialog, int i) {
+                if (dialog != null)
+                    dialog.dismiss();
                 if (editMode) {
-                    viewSetup();//go into view mode
                     getContentResolver().notifyChange(mUri, null);// discard changes
+                    viewSetup();//go into view mode
                 } else finish();
             }
         }, R.string.keep_editing);
     }
 
-    // user actions
+    // User actions
 
     private void buy() {
         if (mUri == null) return;
@@ -934,6 +890,7 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
             QuantityValidation.setValue(quantityView, quantity);
             supplierView.setText(supplier.trim());
             phoneView.setText(phone.trim());
+            clearErrors();//must clear errors after we restore the data from database
         }
     }
 
@@ -944,6 +901,7 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
         quantityView.setText(null);
         supplierView.setText(null);
         phoneView.setText(null);
+        clearErrors();
     }
 
     // show a confirmation dialog

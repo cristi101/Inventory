@@ -35,9 +35,6 @@
                 android:layout_rowSpan="5"
                 android:background="@color/header" />
 
-            <!--TODO Check the input type for fields -->
-            <!--TODO Add citations -->
-
             <!-- labels and fields -->
             <TextView
                 style="@style/label"
@@ -79,10 +76,14 @@
                 android:layout_column="2"
                 android:layout_row="1"
                 android:hint="@string/hint_price"
-                android:digits="0123456789,."
+                android:digits="01234567890,."
                 android:inputType="text"
-                android:singleLine="true"
-                android:maxLength="16" />
+                android:maxLength="25"
+                android:maxLines="1"
+                android:minLines="1"
+                android:scrollHorizontally="true"
+                android:scrollbars="horizontal|vertical"
+                android:singleLine="true" />
 
             <TextView
                 style="@style/label"
@@ -114,8 +115,12 @@
                     android:hint="@string/hint_quantity"
                     android:digits="0123456789,."
                     android:inputType="text"
-                    android:singleLine="true"
-                    android:maxLength="160" />
+                    android:maxLength="25"
+                    android:maxLines="1"
+                    android:minLines="1"
+                    android:scrollHorizontally="true"
+                    android:scrollbars="horizontal|vertical"
+                    android:singleLine="true" />
 
                 <ImageView
                     android:id="@+id/sell"
