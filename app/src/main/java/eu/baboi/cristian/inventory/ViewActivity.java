@@ -14,8 +14,10 @@ import android.database.sqlite.SQLiteConstraintException;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -28,14 +30,17 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.util.Locale;
@@ -146,7 +151,7 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
     }
 
     // Check that price field is a positive fractional number
-    private static class PriceValidation implements View.OnClickListener, View.OnTouchListener, View.OnFocusChangeListener, TextView.OnEditorActionListener {
+    private static class PriceValidation implements View.OnLongClickListener, View.OnClickListener, View.OnFocusChangeListener, TextView.OnEditorActionListener {
         private static Locale mLocale;
         private KeyboardView kv;
 
@@ -155,14 +160,10 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
             kv = keyboardView;
         }
 
-
-        public boolean onTouch(View v, MotionEvent event) {
-            EditText edittext = (EditText) v;
-            int inType = edittext.getInputType();       // Backup the input type
-            edittext.setInputType(InputType.TYPE_NULL); // Disable standard keyboard
-            edittext.onTouchEvent(event);               // Call native handler
-            edittext.setInputType(inType);              // Restore input type
-            return true; // Consume touch event
+        @Override
+        public boolean onLongClick(View v) {
+            showCustomKeyboard(kv, v);
+            return false;
         }
 
 
@@ -222,9 +223,11 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
             }
             return value;
         }
+
+
     }
 
-    private static class QuantityValidation implements View.OnClickListener, View.OnTouchListener, View.OnFocusChangeListener, TextView.OnEditorActionListener {
+    private static class QuantityValidation implements View.OnLongClickListener, View.OnClickListener, View.OnFocusChangeListener, TextView.OnEditorActionListener {
         private static Locale mLocale;
         private KeyboardView kv;
 
@@ -233,13 +236,10 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
             kv = keyboardView;
         }
 
-        public boolean onTouch(View v, MotionEvent event) {
-            EditText edittext = (EditText) v;
-            int inType = edittext.getInputType();       // Backup the input type
-            edittext.setInputType(InputType.TYPE_NULL); // Disable standard keyboard
-            edittext.onTouchEvent(event);               // Call native handler
-            edittext.setInputType(inType);              // Restore input type
-            return true; // Consume touch event
+        @Override
+        public boolean onLongClick(View v) {
+            showCustomKeyboard(kv, v);
+            return false;
         }
 
         @Override
@@ -312,16 +312,22 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
 
         productView.setOnFocusChangeListener(textValidation);
         productView.setOnEditorActionListener(textValidation);
+
         priceView.setOnFocusChangeListener(priceValidation);
         priceView.setOnEditorActionListener(priceValidation);
         priceView.setOnClickListener(priceValidation);
-        priceView.setOnTouchListener(priceValidation);
+        priceView.setOnLongClickListener(priceValidation);
+
+
         quantityView.setOnFocusChangeListener(quantityValidation);
         quantityView.setOnEditorActionListener(quantityValidation);
         quantityView.setOnClickListener(quantityValidation);
-        quantityView.setOnTouchListener(quantityValidation);
+        quantityView.setOnLongClickListener(quantityValidation);
+
+
         supplierView.setOnFocusChangeListener(textValidation);
         supplierView.setOnEditorActionListener(textValidation);
+
         phoneView.setOnFocusChangeListener(textValidation);
         phoneView.setOnEditorActionListener(textValidation);
     }
@@ -364,12 +370,28 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
 
     // Source https://inducesmile.com/android/how-to-create-an-android-custom-keyboard-application/
 
-    private class CustomKeyboard implements KeyboardView.OnKeyboardActionListener {
+    // Provide InputMethodManager.dispatchKeyEventFromInputMethod using reflection
+    private static void dispatchKeyEventFromInputMethod(@NonNull View targetView,
+                                                        @NonNull KeyEvent event) {
+        try {
+            Method getViewRootImpl = targetView.getClass().getMethod("getViewRootImpl");
+            Object viewRootImpl = getViewRootImpl.invoke(targetView);
+            Method dispatchKeyFromIme = viewRootImpl.getClass().getMethod("dispatchKeyFromIme", KeyEvent.class);
+            dispatchKeyFromIme.invoke(viewRootImpl, event);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
 
+    private class CustomKeyboard implements KeyboardView.OnKeyboardActionListener {
 
         @Override
         public void onKey(int primaryCode, int[] keyCodes) {
-            View v = getCurrentFocus();
+            EditText v = (EditText) getCurrentFocus();
             View next;
             int flagsDown = KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE;
             int flagsUp = KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE;
@@ -384,13 +406,25 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
                     next.requestFocusFromTouch();
                     break;
                 case KeyEvent.KEYCODE_ENTER:
+                    primaryCode = KeyEvent.KEYCODE_TAB;
                 default:// dispatch the key event
+                    // get the input connection
+                    InputConnection ic = (InputConnection) v.getTag();
+
+                    // prepare the events
                     long eventTime = SystemClock.uptimeMillis();
                     KeyEvent eventDown = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, primaryCode, 0, 0, 0, scancode, flagsDown, InputDevice.SOURCE_KEYBOARD);
                     KeyEvent eventUp = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_UP, primaryCode, 0, 0, 0, scancode, flagsUp, InputDevice.SOURCE_KEYBOARD);
 
-                    dispatchKeyEvent(eventDown);
-                    dispatchKeyEvent(eventUp);
+                    // dispatch the events
+
+                    //using documented API
+                    ic.sendKeyEvent(eventDown);
+                    ic.sendKeyEvent(eventUp);
+
+                    //using undocumented methods via reflection
+                    //dispatchKeyEventFromInputMethod(v,eventDown);
+                    //dispatchKeyEventFromInputMethod(v,eventUp);
             }
         }
 
@@ -432,11 +466,32 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
 
     private void setupKeyboard() {
 
+        // attach the input connection to the views
+        EditorInfo info = new EditorInfo();
+        InputConnection ic;
+
+        ic = priceView.onCreateInputConnection(info);
+        priceView.setTag(ic);
+
+        ic = quantityView.onCreateInputConnection(info);
+        quantityView.setTag(ic);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // hide the soft keyboard for the two fields
+            priceView.setShowSoftInputOnFocus(false);
+            quantityView.setShowSoftInputOnFocus(false);
+        } else {
+            // disable the soft keyboard for the two fields
+            priceView.setInputType(InputType.TYPE_NULL);
+            quantityView.setInputType(InputType.TYPE_NULL);
+        }
+
         keyboardView = findViewById(R.id.keyboard_view);
         Keyboard kb = new Keyboard(this, R.xml.keyboard);
         keyboardView.setKeyboard(kb);
-        keyboardView.setOnKeyboardActionListener(new CustomKeyboard());
 
+        // activate the keyboard
+        keyboardView.setOnKeyboardActionListener(new CustomKeyboard());
     }
 
     // custom keyboard actions
@@ -446,28 +501,34 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
     }
 
     private static void showCustomKeyboard(KeyboardView keyboardView, View v) {
-        keyboardView.setVisibility(View.VISIBLE);
-        keyboardView.setEnabled(true);
         if (v != null) {
             hideKeyboard(v);
         }
+        keyboardView.setVisibility(View.VISIBLE);
+        keyboardView.setEnabled(true);
     }
 
     private boolean isCustomKeyboardVisible() {
         return keyboardView.getVisibility() == View.VISIBLE;
     }
 
+    private static void showKeyboard(View v, int flags) {
+        Context context = v.getContext();
+        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.showSoftInput(v, flags);
+    }
     // soft keyboard actions
     private static void showKeyboard(View v) {
-        Context context = v.getContext();
-        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.showSoftInput(v, 0);
+        showKeyboard(v, 0);
     }
 
-    private static void hideKeyboard(View v) {
+    private static void hideKeyboard(View v, int flags) {
         Context context = v.getContext();
         InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+        imm.hideSoftInputFromWindow(v.getWindowToken(), flags);
+    }
+    private static void hideKeyboard(View v) {
+        hideKeyboard(v, 0);
     }
 
 
