@@ -484,6 +484,13 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
             // disable the soft keyboard for the two fields
             priceView.setInputType(InputType.TYPE_NULL);
             quantityView.setInputType(InputType.TYPE_NULL);
+
+            // enable the edit cursor
+            priceView.setRawInputType(InputType.TYPE_CLASS_TEXT);
+            quantityView.setRawInputType(InputType.TYPE_CLASS_TEXT);
+
+            priceView.setTextIsSelectable(true);
+            quantityView.setTextIsSelectable(true);
         }
 
         keyboardView = findViewById(R.id.keyboard_view);
