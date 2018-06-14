@@ -34,9 +34,9 @@ public class InventoryProvider extends ContentProvider {
     // Add paths to matcher
     static {
         sUriMatcher.addURI(InventoryContract.CONTENT_AUTHORITY, InventoryContract.PATH_INVENTORY, INVENTORY);
-        sUriMatcher.addURI(InventoryContract.CONTENT_AUTHORITY, String.format("%s/#", InventoryContract.PATH_INVENTORY), INVENTORY_ID);
-        sUriMatcher.addURI(InventoryContract.CONTENT_AUTHORITY, String.format("%s/#/#", InventoryContract.PATH_SELL_INVENTORY), SELL_ID);
-        sUriMatcher.addURI(InventoryContract.CONTENT_AUTHORITY, String.format("%s/#/#", InventoryContract.PATH_BUY_INVENTORY), BUY_ID);
+        sUriMatcher.addURI(InventoryContract.CONTENT_AUTHORITY, InventoryContract.PATH_INVENTORY + "/#", INVENTORY_ID);
+        sUriMatcher.addURI(InventoryContract.CONTENT_AUTHORITY, InventoryContract.PATH_SELL_INVENTORY + "/#/#", SELL_ID);
+        sUriMatcher.addURI(InventoryContract.CONTENT_AUTHORITY, InventoryContract.PATH_BUY_INVENTORY + "/#/#", BUY_ID);
     }
 
     @Override

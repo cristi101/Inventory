@@ -812,12 +812,11 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
         if (mUri == null) return;
         int count = 0;
         final ContentResolver resolver = getContentResolver();
-        final String message = getString(R.string.buy_item_error);
         try { // on UI thread
             count = resolver.update(Uri.parse(String.format("%s/%d/%d", InventoryEntry.BUY_URI, 1, ContentUris.parseId(mUri))), null, null, null);
         } catch (SQLiteConstraintException e) {
-            count = 1;
-            Toast.makeText(this, String.format(message, e.getLocalizedMessage()), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.buy_item_error, e.getLocalizedMessage()), Toast.LENGTH_LONG).show();
+            return;
         }
         if (count == 0)
             Toast.makeText(this, R.string.database_error, Toast.LENGTH_LONG).show();
@@ -827,12 +826,11 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
         if (mUri == null) return;
         int count = 0;
         final ContentResolver resolver = getContentResolver();
-        final String message = getString(R.string.sell_item_error);
         try { // on UI thread
             count = resolver.update(Uri.parse(String.format("%s/%d/%d", InventoryEntry.SELL_URI, 1, ContentUris.parseId(mUri))), null, null, null);
         } catch (SQLiteConstraintException e) {
-            count = 1;
-            Toast.makeText(this, String.format(message, e.getLocalizedMessage()), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.sell_item_error, e.getLocalizedMessage()), Toast.LENGTH_LONG).show();
+            return;
         }
         if (count == 0)
             Toast.makeText(this, R.string.database_error, Toast.LENGTH_LONG).show();
@@ -840,7 +838,7 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
 
     private void call() {
         Intent intent = new Intent();
-        intent.setData(Uri.parse(String.format("tel:%s", phoneView.getText().toString().trim())));
+        intent.setData(Uri.fromParts("tel", phoneView.getText().toString().trim(), null));
         intent.setAction(Intent.ACTION_DIAL);
         startActivity(intent);
     }
@@ -853,16 +851,15 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
     private void delete() {
         if (mUri == null) return;
         final ContentResolver resolver = getContentResolver();
-        final String message = getString(R.string.validation_error);
         int count = 0;
         try {
             count = resolver.delete(mUri, null, null);
         } catch (SQLiteConstraintException e) {
-            count = -1;
-            Toast.makeText(this, String.format(message, e.getLocalizedMessage()), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.validation_error, e.getLocalizedMessage()), Toast.LENGTH_LONG).show();
+            return;
         }
         if (count == 0) Toast.makeText(this, R.string.delete_failed, Toast.LENGTH_LONG).show();
-        else if (count > 0) Toast.makeText(this, R.string.delete_success, Toast.LENGTH_LONG).show();
+        else Toast.makeText(this, R.string.delete_success, Toast.LENGTH_LONG).show();
     }
 
     private boolean save() {
@@ -899,20 +896,20 @@ public class ViewActivity extends AppCompatActivity implements TextWatcher, Load
             try {
                 count = resolver.update(mUri, values, null, null);
             } catch (SQLiteConstraintException e) {
-                Toast.makeText(this, String.format(getString(R.string.validation_error), e.getLocalizedMessage()), Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getString(R.string.validation_error, e.getLocalizedMessage()), Toast.LENGTH_LONG).show();
                 return false;
             }
             if (count == 0)
-                Toast.makeText(this, getString(R.string.update_failed), Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.update_failed, Toast.LENGTH_LONG).show();
             else {
-                Toast.makeText(this, getString(R.string.update_success), Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.update_success, Toast.LENGTH_LONG).show();
                 return true;
             }
         } else {
             try {
                 mUri = resolver.insert(InventoryEntry.CONTENT_URI, values);
             } catch (SQLiteConstraintException e) {
-                Toast.makeText(this, String.format(getString(R.string.validation_error), e.getLocalizedMessage()), Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getString(R.string.validation_error, e.getLocalizedMessage()), Toast.LENGTH_LONG).show();
                 return false;
             }
             if (mUri == null)

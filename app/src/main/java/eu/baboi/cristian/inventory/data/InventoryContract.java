@@ -10,8 +10,8 @@ public final class InventoryContract {
 
     // paths
     public static final String PATH_INVENTORY = "inventory";
-    public static final String PATH_SELL_INVENTORY = String.format("%s/sell", PATH_INVENTORY);
-    public static final String PATH_BUY_INVENTORY = String.format("%s/buy", PATH_INVENTORY);
+    public static final String PATH_SELL_INVENTORY = PATH_INVENTORY + "/sell";
+    public static final String PATH_BUY_INVENTORY = PATH_INVENTORY + "/buy";
 
     private InventoryContract() {
     }

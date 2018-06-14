@@ -60,12 +60,11 @@ public class InventoryCursorAdapter extends CursorAdapter {
             int count = 0;
             final Context context = v.getContext();
             final ContentResolver resolver = context.getContentResolver();
-            final String message = context.getString(R.string.sell_item_error);
             try { // on UI thread
                 count = resolver.update(Uri.parse(String.format("%s/%d/%d", InventoryEntry.SELL_URI, 1, mId)), null, null, null);
             } catch (SQLiteConstraintException e) {
-                count = 1;
-                Toast.makeText(context, String.format(message, e.getLocalizedMessage()), Toast.LENGTH_LONG).show();
+                Toast.makeText(context, context.getString(R.string.sell_item_error, e.getLocalizedMessage()), Toast.LENGTH_LONG).show();
+                return;
             }
             if (count == 0)
                 Toast.makeText(context, R.string.database_error, Toast.LENGTH_LONG).show();
